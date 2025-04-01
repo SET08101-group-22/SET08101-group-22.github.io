@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Quiz</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+    <h1>Quiz Title</h1>
+    <div class="difficulty-indicator">Difficulty: <span id="current-difficulty">Medium</span></div>
+</header>
+
+<main>
+    <!-- timer component -->
+    <div class="timer-container">
+        <div class="timer">
+            <div class="timer-fill"></div>
+            <span class="timer-text">30</span>
+        </div>
+    </div>
+
+    <!-- power-ups -->
+    <div class="power-up-panel">
+        <div class="power-up" id="fifty-fifty">
+            <button class="power-up-button" title="50/50: Eliminates two incorrect answers">
+                <span class="power-up-icon">50:50</span>
+            </button>
+            <span class="power-up-label">50/50</span>
+        </div>
+
+        <div class="power-up" id="skip">
+            <button class="power-up-button" title="Skip: Move to next question without penalty">
+                <span class="power-up-icon">⏩</span>
+            </button>
+            <span class="power-up-label">Skip</span>
+        </div>
+
+        <div class="power-up" id="extra-time">
+            <button class="power-up-button" title="Extra Time: Add more seconds to the timer">
+                <span class="power-up-icon">⏱️+</span>
+            </button>
+            <span class="power-up-label">Extra Time</span>
+        </div>
+
+        <div class="power-up power-up-disabled" id="ask-audience">
+            <button class="power-up-button" title="Ask the Audience: Get a hint from simulated audience" disabled>
+                <span class="power-up-icon">👥</span>
+            </button>
+            <span class="power-up-label">Ask Audience</span>
+        </div>
+    </div>
+
+    <!-- score -->
+    <div class="score-display">
+        <span>Score: <span id="current-score">0</span></span>
+        <span>Question: <span id="question-number">1</span>/<span id="total-questions">10</span></span>
+    </div>
+
+    <!-- question container -->
+    <div class="question-container">
+        <!-- multiple choice template -->
+        <div class="question-template multiple-choice">
+            <h2 class="question-text">What is the capital city of France?</h2>
+            <div class="options-container">
+                <div class="option">
+                    <input type="radio" name="mcq" id="option1" class="option-input">
+                    <label for="option1" class="option-label">Berlin</label>
+                </div>
+                <div class="option">
+                    <input type="radio" name="mcq" id="option2" class="option-input">
+                    <label for="option2" class="option-label">London</label>
+                </div>
+                <div class="option">
+                    <input type="radio" name="mcq" id="option3" class="option-input">
+                    <label for="option3" class="option-label">Paris</label>
+                </div>
+                <div class="option">
+                    <input type="radio" name="mcq" id="option4" class="option-input">
+                    <label for="option4" class="option-label">Rome</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- true/false template (hidden by default) -->
+        <div class="question-template true-false" style="display: none;">
+            <h2 class="question-text">Paris is the capital of France.</h2>
+            <div class="options-container">
+                <div class="option option-true">
+                    <input type="radio" name="tf" id="true" class="option-input">
+                    <label for="true" class="option-label">True</label>
+                </div>
+                <div class="option option-false">
+                    <input type="radio" name="tf" id="false" class="option-input">
+                    <label for="false" class="option-label">False</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- select all that apply template (hidden by default) -->
+        <div class="question-template select-all" style="display: none;">
+            <h2 class="question-text">Which of the following are capital cities?</h2>
+            <div class="options-container">
+                <div class="option">
+                    <input type="checkbox" id="check1" class="option-input">
+                    <label for="check1" class="option-label">Paris</label>
+                </div>
+                <div class="option">
+                    <input type="checkbox" id="check2" class="option-input">
+                    <label for="check2" class="option-label">New York</label>
+                </div>
+                <div class="option">
+                    <input type="checkbox" id="check3" class="option-input">
+                    <label for="check3" class="option-label">Tokyo</label>
+                </div>
+                <div class="option">
+                    <input type="checkbox" id="check4" class="option-input">
+                    <label for="check4" class="option-label">Barcelona</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="submit-btn">Submit Answer</button>
+    </div>
+
+    <!-- power-up confirm modal (hidden by default) -->
+    <div class="modal" id="power-up-modal" style="display: none;">
+        <div class="modal-content">
+            <h3>Use Power-up?</h3>
+            <p>Are you sure you want to use the <span id="power-up-name">50/50</span> power-up?</p>
+            <div class="modal-buttons">
+                <button class="modal-btn cancel-btn">Cancel</button>
+                <button class="modal-btn confirm-btn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ask the audience result (hidden by default) -->
+    <div class="audience-result" style="display: none;">
+        <h3>Audience Poll Results</h3>
+        <div class="poll-container">
+            <div class="poll-option">
+                <div class="poll-label">A</div>
+                <div class="poll-bar-container">
+                    <div class="poll-bar" style="width: 15%;"></div>
+                    <span class="poll-percentage">15%</span>
+                </div>
+            </div>
+            <div class="poll-option">
+                <div class="poll-label">B</div>
+                <div class="poll-bar-container">
+                    <div class="poll-bar" style="width: 20%;"></div>
+                    <span class="poll-percentage">20%</span>
+                </div>
+            </div>
+            <div class="poll-option">
+                <div class="poll-label">C</div>
+                <div class="poll-bar-container">
+                    <div class="poll-bar" style="width: 55%;"></div>
+                    <span class="poll-percentage">55%</span>
+                </div>
+            </div>
+            <div class="poll-option">
+                <div class="poll-label">D</div>
+                <div class="poll-bar-container">
+                    <div class="poll-bar" style="width: 10%;"></div>
+                    <span class="poll-percentage">10%</span>
+                </div>
+            </div>
+        </div>
+        <button class="close-audience-btn">Close</button>
+    </div>
+</main>
+
+<footer>
+    <p>SET08101-group-22 quiz-website</p>
+</footer>
+</body>
+</html>
