@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cricket Quiz</title>
+  <link rel="stylesheet" href="styles/globals.css">
+  <link rel="stylesheet" href="styles/quiz-hamzah.css">
+</head>
+<body>
+  <div class="quiz-container">
+    <h1>Cricket Quiz</h1>
+    <div class="timer">Time Left: <span id="time">30</span>s</div>
+    <form id="quiz-form"></form>
+    <div class="controls">
+      <button type="button" class="skip-btn" id="skip-btn">Skip Question</button>
+      <button type="button" class="next-btn" id="next-btn" disabled>Next Question</button>
+      <button type="button" class="submit-btn" id="submit-quiz">Submit Quiz</button>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      { question: "Who won the ICC Cricket World Cup 2019?", options: ["India", "Australia", "England", "New Zealand"], answer: "England" },
+      { question: "Which cricketer is known as 'The Wall'?", options: ["Rahul Dravid", "Sachin Tendulkar", "Virat Kohli", "MS Dhoni"], answer: "Rahul Dravid" },
+      { question: "Who has the highest number of wickets in Test cricket?", options: ["Muttiah Muralitharan", "Shane Warne", "Anil Kumble", "James Anderson"], answer: "Muttiah Muralitharan" },
+      { question: "Which country has won the most ICC Cricket World Cups?", options: ["India", "West Indies", "Australia", "Pakistan"], answer: "Australia" },
+      { question: "Who is the fastest batsman to score 10,000 ODI runs?", options: ["Virat Kohli", "Sachin Tendulkar", "Ricky Ponting", "Jacques Kallis"], answer: "Virat Kohli" },
+      { question: "Where was the first ever cricket World Cup held?", options: ["India", "England", "Australia", "South Africa"], answer: "England" },
+      { question: "What is the term for a batsman getting out without scoring a run?", options: ["Golden duck", "Zero run", "No score", "Runout"], answer: "Golden duck" },
+      { question: "Who is the only player to score 100 international centuries?", options: ["Virat Kohli", "Ricky Ponting", "Brian Lara", "Sachin Tendulkar"], answer: "Sachin Tendulkar" },
+      { question: "How many players are there in a cricket team?", options: ["9", "10", "11", "12"], answer: "11" },
+      { question: "What is the maximum number of overs in a T20 match per team?", options: ["20", "50", "10", "15"], answer: "20" }
+    ];
+
+    let current = 0;
+    let score = 0;
+    let timer;
+    let timeLeft = 30;
+
+    const quizForm = document.getElementById('quiz-form');
+    const timeDisplay = document.getElementById('time');
+    const skipBtn = document.getElementById('skip-btn');
+    const nextBtn = document.getElementById('next-btn');
+
+    function loadQuestion() {
+      quizForm.innerHTML = '';
+      const q = questions[current];
+      const html = `
+        <h2>Q${current + 1}: ${q.question}</h2>
+        ${q.options.map((opt, i) => `
+          <label><input type="radio" name="q${current}" value="${opt}"> ${opt}</label><br>
+        `).join('')}
+      `;
+      quizForm.innerHTML = html;
+      document.querySelectorAll(`input[name="q${current}"]`).forEach(input => {
+        input.addEventListener('change', () => {
+          nextBtn.disabled = false;
+          skipBtn.disabled = true;
+        });
+      });
+      nextBtn.disabled = true;
+      skipBtn.disabled = false;
+      resetTimer();
+    }
+
+    function checkCurrentAnswer() {
+      const selected = document.querySelector(`input[name="q${current}"]:checked`);
+      if (selected && selected.value === questions[current].answer) {
+        score++;
+      }
+    }
+
+    function nextQuestion() {
+      checkCurrentAnswer();
+      current++;
+      if (current < questions.length) {
+        loadQuestion();
+      } else {
+        clearInterval(timer);
+        goToResult();
+      }
+    }
+
+    function goToResult() {
+      window.location.href = `result.html?score=${score}&total=${questions.length}`;
+    }
+
+    function resetTimer() {
+      clearInterval(timer);
+      timeLeft = 30;
+      timeDisplay.textContent = timeLeft;
+      timer = setInterval(() => {
+        timeLeft--;
+        timeDisplay.textContent = timeLeft;
+        if (timeLeft === 0) {
+          nextQuestion();
+        }
+      }, 1000);
+    }
+
+    skipBtn.addEventListener('click', nextQuestion);
+    nextBtn.addEventListener('click', nextQuestion);
+    document.getElementById('submit-quiz').addEventListener('click', () => {
+      checkCurrentAnswer();
+      clearInterval(timer);
+      goToResult();
+    });
+
+    loadQuestion();
+  </script>
+</body>
+</html>
