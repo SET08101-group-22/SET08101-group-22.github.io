@@ -1,24 +1,69 @@
 // quiz questions data
 const quizQuestions = [
-    {
-        question: "What is the capital of France?",
-        options: ["Berlin", "Madrid", "Paris", "Rome"],
-        correct: "Paris",
-        type: "multiple-choice"
-    },
-    {
-        question: "What planet is known as the Red Planet?",
-        options: ["Earth", "Mars", "Jupiter", "Saturn"],
-        correct: "Mars",
-        type: "multiple-choice"
-    },
-    {
-        question: "Who wrote Romeo and Juliet?",
-        options: ["Charles Dickens", "J.K. Rowling", "Mark Twain", "William Shakespeare"],
-        correct: "William Shakespeare",
-        type: "multiple-choice"
-    }
+  // Hamzahs Cricket questions start here
+  {
+      question: "Who won the ICC Cricket World Cup 2019?",
+      options: ["India", "Australia", "England", "New Zealand"],
+      correct: "England",
+      type: "multiple-choice"
+  },
+  {
+      question: "Which cricketer is nicknamed “The Wall”?",
+      options: ["Rahul Dravid", "Sachin Tendulkar", "Virat Kohli", "MS Dhoni"],
+      correct: "Rahul Dravid",
+      type: "multiple-choice"
+  },
+  {
+      question: "Who holds the record for most Test wickets?",
+      options: ["Muttiah Muralitharan", "Shane Warne", "Anil Kumble", "James Anderson"],
+      correct: "Muttiah Muralitharan",
+      type: "multiple-choice"
+  },
+  {
+      question: "Which team has won the most ICC Cricket World Cups?",
+      options: ["India", "West Indies", "Australia", "Pakistan"],
+      correct: "Australia",
+      type: "multiple-choice"
+  },
+  {
+      question: "Who is the fastest player to 6,000 ODI runs?",
+      options: ["Virat Kohli", "Babar Azam", "Ricky Ponting", "Jacques Kallis"],
+      correct: "Virat Kohli",
+      type: "multiple-choice"
+  },
+  {
+      question: "Which country hosted the first Cricket World Cup (1975)?",
+      options: ["India", "England", "Australia", "South Africa"],
+      correct: "England",
+      type: "multiple-choice"
+  },
+  {
+      question: "Getting out for zero runs on the first ball faced is called a?",
+      options: ["Golden duck", "No-score", "Run-out", "Zero run"],
+      correct: "Golden duck",
+      type: "multiple-choice"
+  },
+  {
+      question: "Who is the only player with 100 international centuries?",
+      options: ["Virat Kohli", "Ricky Ponting", "Brian Lara", "Sachin Tendulkar"],
+      correct: "Sachin Tendulkar",
+      type: "multiple-choice"
+  },
+  {
+      question: "How many players are there on a cricket team?",
+      options: ["9", "10", "11", "12"],
+      correct: "11",
+      type: "multiple-choice"
+  },
+  {
+      question: "How many overs does each side bowl in a standard T20 match?",
+      options: ["20", "50", "10", "15"],
+      correct: "20",
+      type: "multiple-choice"
+  }
+  // hamzahs  Cricket questions end here 
 ];
+
 
 // global variables
 let questionIndex = 0;
@@ -145,23 +190,34 @@ function handleTimeOut() {
 
 // process user's answer
 function processAnswer() {
-    // get selected answer
-    const selectedOption = document.querySelector('.multiple-choice input:checked');
+  const selectedOption = document.querySelector('.multiple-choice input:checked');
+  const feedback = document.getElementById("feedback");
 
-    if (selectedOption) {
-        userAnswer = selectedOption.nextElementSibling.textContent;
-        checkAnswer(userAnswer);
-        moveToNextQuestion();
+  if (selectedOption) {
+    userAnswer = selectedOption.nextElementSibling.textContent;
+
+    if (userAnswer === quizQuestions[questionIndex].correct) {
+      userScore += 1;
+      feedback.textContent = "Correct!";
+      feedback.style.color = "green";
     } else {
-        // no answer selected
-        alert("Please select an answer first!");
+      feedback.textContent = `Wrong! The correct answer was "${quizQuestions[questionIndex].correct}".`;
+      feedback.style.color = "red";
     }
+
+    setTimeout(() => {
+      feedback.textContent = "";
+      moveToNextQuestion();
+    }, 1500); // show the user the correct answer for 1.5 seconds 
+  } else {
+    alert("Please select an answer first!");
+  }
 }
 
 // check if answer is correct
 function checkAnswer(userAnswer) {
     if (userAnswer === quizQuestions[questionIndex].correct) {
-        userScore += 100;
+        userScore += 1;
     }
 }
 
@@ -176,33 +232,22 @@ function moveToNextQuestion() {
     }
 }
 
-// end the quiz and show results
 function endQuiz() {
-    clearInterval(timerInterval);
+  clearInterval(timerInterval); // stop timer
+  const total = quizQuestions.length;
 
-    // hide question container
-    document.querySelector(".question-container").style.display = "none";
-    document.querySelector(".controls").style.display = "none";
-    document.querySelector(".power-up-panel").style.display = "none";
-    document.querySelector(".timer-container").style.display = "none";
+  const quizTitle = document.querySelector("header h1").textContent.trim().replace(/\s+/g, "_").toLowerCase();
 
-    // create and show results
-    const main = document.querySelector("main");
-    const resultsDiv = document.createElement("div");
-    resultsDiv.className = "results";
-    resultsDiv.innerHTML = `
-        <h2>Quiz Complete!</h2>
-        <p>Your final score: ${userScore}</p>
-        <button class="restart-btn">Restart Quiz</button>
-    `;
-    main.appendChild(resultsDiv);
+  localStorage.setItem(`${quizTitle}_last`, userScore);
+  const previousBest = localStorage.getItem(`${quizTitle}_best`) || 0;
+  if (userScore > previousBest) {
+    localStorage.setItem(`${quizTitle}_best`, userScore);
+  }
 
-    // add event listener to restart button
-    document.querySelector(".restart-btn").addEventListener("click", restartQuiz);
-
-    // save score to local storage (for persistent high scores)
-    saveScore();
+  window.location.href = `result.html?score=${userScore}&total=${total}`;
 }
+
+
 
 // save score to local storage
 function saveScore() {
@@ -397,9 +442,10 @@ function useExtraTimePowerUp() {
 
 // fisher-yates shuffle algorithm for arrays (shuffling for 50/50)
 function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
+  for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
 }
+
