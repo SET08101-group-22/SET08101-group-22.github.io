@@ -28,7 +28,7 @@ const quizQuestions = [
   {
       question: "Who is the fastest player to 6,000 ODI runs?",
       options: ["Virat Kohli", "Babar Azam", "Ricky Ponting", "Jacques Kallis"],
-      correct: "Virat Kohli",
+      correct: "Babar Azam",
       type: "multiple-choice"
   },
   {
