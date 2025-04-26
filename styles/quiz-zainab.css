@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head> 
+	<title>Are you smarter than a Uni Student?</title>
+	<style> 
+	  body { 
+	    text-align: center; 
+	    color: pink; 
+	  } 
+	</style>
+</head> 
+<body> 
+	<div class="quiz-container">
+     <div id="score">Score: 0 / 0</div>
+     <h2 id="question">Loading question...</h2>
+     <div id="answers"></div>
+     <div id="result"></div>
+     <button onclick="nextQuestion()">Next Question</button>
+  </div>
+
+<script> 
+	const quizData = [ 
+	  { 
+	    question: "Which artist released the album '1989'?", 
+	    answers: ["Taylor Swift", "Olivia Rodrigo", "Ariana Grande", "Sabrina Carpenter"], 
+	    correct: "Taylor Swift" 
+	  },
+	  {
+	    question: "What is the highest grossing movie franchise?",
+	    answers: ["Marvel", "Harry Potter", "Star Wars", "James Bond"],
+	    correct: "Marvel"
+	  },
+	  {
+	    question: "Which planet is known as the red planet?", 
+	    answers: ["Earth", "Mars", "Jupiter", "Venus"],
+	    correct: "Mars"
+	  },
+	  {
+	    question: "What is the country with the highest population?", 
+	    answers: ["China", "India", "Russia", "United States"], 
+	    correct: "India"
+	  }, 
+	  {
+	    question: "How many days were Kim Kardashian and Kris Humphries married?", 
+	    answers: ["3 years", "6 months", "72 days", "1 year"], 
+	    correct: "72 days"
+	  }, 
+	  {
+	    question: "How many hearts does an octopus have?",
+	    answers: ["one", "five", "three", "two"], 
+	    correct: "three"
+	  }, 
+	  {
+	    question: "In the TV show 'The Office' what type of company do the characters work for?",
+	    answers: ["Insurance", "Dog food", "Paper", "Parks and Recreation"], 
+	    correct: "Paper"
+	  }, 
+	];
+	  
+	let currentQuestion = 0; 
+	let score = 0; 
+	  
+	function loadQuestion() {
+		const q = quizData[currentQuestion]; 
+		document.getElementById("question").textContent = q.question;
+		document.getElementById("score").textContent = `Score: ${score} / ${quizData.length}`;
+		
+		const answersDiv = document.getElementById("answers"); 
+		answersDiv.innerHTML = ""; 
+		
+		q.answers.forEach(answer => { 
+			const btn = document.createElement("button"); 
+			btn.textContent = answer; 
+			btn.onclick = () => checkAnswer(answer); 
+			answersDiv.appendChild(btn); 
+		}); 
+			
+		document.getElementById("result").textContent = ""; 
+	} 
+		
+	function checkAnswer(selected) { 
+		const correct = quizData[currentQuestion].correct; 
+		const result = document.getElementById("result"); 
+		
+		if (selected === correct) { 
+			result.textContent = "Correct!"; 
+			score++; 
+		} else { 
+			result.textContent = `Wrong! The correct answer is: ${correct}`; 
+		}
+			
+		const allButtons = document.querySelectorAll("#answers button"); 
+		allButtons.forEach(btn => btn.disabled = true); 
+		
+		document.getElementById("score").textContent = `Score: ${score} / ${quizData.length}`; 
+	} 
+		
+	function nextQuestion() {
+		currentQuestion++; 
+		if (currentQuestion < quizData.length) { 
+			loadQuestion(); 
+		} else {
+			document.querySelector(".quiz-container").innerHTML = `
+				<h2>QUIZ COMPLETED!!</h2> 
+				<p>You scored ${score} out of ${quizData.length}.</p>
+			`; 
+		}
+	}
+			
+	loadQuestion();
+</script> 
+</body>
+</html>
