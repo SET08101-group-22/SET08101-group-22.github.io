@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>Quiz Result</title>
   <link rel="stylesheet" href="styles/globals.css">
-  <link rel="stylesheet" href="styles/quiz-hamzah.css">
   <style>
     .result-box {
       text-align: center;
@@ -55,13 +54,14 @@
     </div>
 
     <div class="btn-group">
-      <button class="submit-btn" onclick="window.location.href='selection.html'">Back to Dashboard</button>
-      <button class="next-btn" onclick="window.location.href='quiz.html'">Retake Quiz</button>
+      <button class="submit-btn" onclick="window.location.href='index.html'">Back to Dashboard</button>
+      <button class="next-btn" onclick="window.location.href='quiz.html'">Retake Last Quiz</button>
     </div>
   </div>
 
+  <!-- JavaScript for results page functionality -->
   <script>
-    // Get score from URL
+    // Get score and total from URL parameters
     const params = new URLSearchParams(window.location.search);
     const score = Number(params.get('score'));
     const total = Number(params.get('total'));
@@ -69,29 +69,33 @@
     // Display main result
     document.getElementById('result-text').textContent = `You scored ${score} out of ${total}!`;
 
-    // Dynamically use quiz title for localStorage keys
+    // Create a standardized key for storing scores in localStorage
+    // This uses the quiz title converted to lowercase with underscores
     const quizTitle = document.querySelector("h2").textContent.trim().replace(/\s+/g, "_").toLowerCase();
 
-    // Save recent and best scores for any quiz
+    // Save recent and best scores for this specific quiz
+    // Update the last score
     localStorage.setItem(`${quizTitle}_last`, score);
+
+    // Check if this is a new personal best
     const prevBest = localStorage.getItem(`${quizTitle}_best`) || 0;
     if (score > prevBest) {
       localStorage.setItem(`${quizTitle}_best`, score);
     }
 
-    // Show personal best and last attempt
+    // Display personal best and last attempt scores
     const best = localStorage.getItem(`${quizTitle}_best`) || 0;
     const last = localStorage.getItem(`${quizTitle}_last`) || 0;
     document.getElementById('best-score').textContent = `Personal Best: ${best} / ${total}`;
     document.getElementById('last-score').textContent = `Most Recent: ${last} / ${total}`;
 
-    //  Saving attempts per quiz using a dynamic key 
+    // Save this attempt to the history of attempts for this quiz
     const attemptKey = `${quizTitle}_attempts`;
     const attempts = JSON.parse(localStorage.getItem(attemptKey) || '[]');
     attempts.push(score);
     localStorage.setItem(attemptKey, JSON.stringify(attempts));
 
-    // Show last 5 attempts
+    // Display the 5 most recent attempts (newest first)
     const attemptsList = document.getElementById('attempts-list');
     [...attempts].reverse().slice(0, 5).forEach((s, i) => {
       const li = document.createElement('li');
@@ -99,7 +103,7 @@
       attemptsList.appendChild(li);
     });
 
-    // Show top 3 scores
+    // Display the top 3 scores (highest first)
     const topScores = [...attempts].sort((a, b) => b - a).slice(0, 3);
     const topList = document.getElementById('top-scores');
     topScores.forEach((s, i) => {

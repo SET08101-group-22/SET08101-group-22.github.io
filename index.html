@@ -7,42 +7,39 @@
     <link rel="stylesheet" href="styles/globals.css">
 </head>
 <body>
-    <header>
-        <h1>Quiz Game</h1>
-    </header>
-
+<header>
+    <h1>Quiz Game</h1>
+</header>
 
 <main>
-
     <div class="index-option">
         <div class="index-options-container">
-        <select class="index_select_btn" name="dificulty" id="dificulty">
-            <option value="easy">easy</option>
-            <option value="medium">medium</option>
-            <option value="hard">hard</option>
-        </select>
+            <select class="index_select_btn" name="difficulty" id="difficulty">
+                <option value="easy">Easy</option>
+                <option value="medium" selected>Medium</option>
+                <option value="hard">Hard</option>
+            </select>
 
-        <select class="index_select_btn" name="quiz" id="quiz">
-            <option value="index_select_btn">quiz1</option>
-            <option value="index_select_btn">quiz2</option>
-            <option value="index_select_btn">quiz3</option>
-            <option value="index_select_btn">quiz4</option>
-            <option value="index_select_btn">quiz5</option>
+            <select class="index_select_btn" name="quiz" id="quiz">
+                <!-- Quiz options will be populated by JavaScript -->
             </select>
         </div>
     </div>
 
     <div class="index-option">
         <div class="index-options-container">
-        <button class="index_main_btn" onclick="location.href='result.html'">Scores</button>
-        <button class="index_main_btn" onclick="location.href='quiz.html'">Start Quiz</button>
+            <button class="index_main_btn" id="scores-btn">Scores</button>
+            <button class="index_main_btn" id="start-btn">Start Quiz</button>
         </div>
     </div>
-
 </main>
 
 <footer>
     <p>SET08101-group-22 quiz-website</p>
 </footer>
+
+<!-- Include JavaScript files -->
+<script src="question-pools.js"></script>
+<script src="index.js"></script>
 </body>
 </html>

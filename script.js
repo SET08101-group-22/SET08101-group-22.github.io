@@ -1,154 +1,118 @@
-// quiz questions data
-const quizQuestions = [
-  // Hamzahs Cricket questions start here
-  {
-      question: "Who won the ICC Cricket World Cup 2019?",
-      options: ["India", "Australia", "England", "New Zealand"],
-      correct: "England",
-      type: "multiple-choice"
-  },
-  {
-      question: "Which cricketer is nicknamed “The Wall”?",
-      options: ["Rahul Dravid", "Sachin Tendulkar", "Virat Kohli", "MS Dhoni"],
-      correct: "Rahul Dravid",
-      type: "multiple-choice"
-  },
-  {
-      question: "Who holds the record for most Test wickets?",
-      options: ["Muttiah Muralitharan", "Shane Warne", "Anil Kumble", "James Anderson"],
-      correct: "Muttiah Muralitharan",
-      type: "multiple-choice"
-  },
-  {
-      question: "Which team has won the most ICC Cricket World Cups?",
-      options: ["India", "West Indies", "Australia", "Pakistan"],
-      correct: "Australia",
-      type: "multiple-choice"
-  },
-  {
-      question: "Who is the fastest player to 6,000 ODI runs?",
-      options: ["Virat Kohli", "Babar Azam", "Ricky Ponting", "Jacques Kallis"],
-      correct: "Babar Azam",
-      type: "multiple-choice"
-  },
-  {
-      question: "Which country hosted the first Cricket World Cup (1975)?",
-      options: ["India", "England", "Australia", "South Africa"],
-      correct: "England",
-      type: "multiple-choice"
-  },
-  {
-      question: "Getting out for zero runs on the first ball faced is called a?",
-      options: ["Golden duck", "No-score", "Run-out", "Zero run"],
-      correct: "Golden duck",
-      type: "multiple-choice"
-  },
-  {
-      question: "Who is the only player with 100 international centuries?",
-      options: ["Virat Kohli", "Ricky Ponting", "Brian Lara", "Sachin Tendulkar"],
-      correct: "Sachin Tendulkar",
-      type: "multiple-choice"
-  },
-  {
-      question: "How many players are there on a cricket team?",
-      options: ["9", "10", "11", "12"],
-      correct: "11",
-      type: "multiple-choice"
-  },
-  {
-      question: "How many overs does each side bowl in a standard T20 match?",
-      options: ["20", "50", "10", "15"],
-      correct: "20",
-      type: "multiple-choice"
-  }
-  // hamzahs  Cricket questions end here 
-];
+// script.js - Main application logic for the quiz functionality
 
+// Define timer settings for each difficulty level (in seconds)
+const difficultySettings = {
+    easy: 45,    // 45 seconds per question for easy mode
+    medium: 30,  // 30 seconds per question for medium mode
+    hard: 15     // 15 seconds per question for hard mode
+};
 
-// global variables
-let questionIndex = 0;
-let userAnswer = "";
-let userScore = 0;
-let timerInterval;
-let timeLeft = 30; // default time for questions in seconds
+// Array to store the questions for the current quiz
+let quizQuestions = [];
+
+// Global variables to track quiz state
+let questionIndex = 0;      // Current question index
+let userAnswer = "";        // Stores the user's selected answer
+let userScore = 0;          // Tracks the user's score
+let timerInterval;          // Reference to the timer interval
+let timeLeft = 30;          // Default time remaining for current question
+// Track which power-ups have been used during the current quiz
 let powerUpsUsed = {
     fiftyFifty: false,
     skip: false,
     extraTime: false
 };
 
-// initialize when page loads
+// Get saved difficulty and quiz selection from localStorage (default to medium and quiz1 if not found)
+let selectedDifficulty = localStorage.getItem('selectedDifficulty') || 'medium';
+let selectedQuiz = localStorage.getItem('selectedQuiz') || 'quiz1';
+// Set initial time based on difficulty
+let initialTimePerQuestion = difficultySettings[selectedDifficulty];
+
+// Initialize the quiz when the page loads
 window.onload = function() {
+    loadQuestionsForSelectedQuiz();
+    // Update the displayed difficulty level with proper capitalization
+    document.getElementById("current-difficulty").textContent =
+        selectedDifficulty.charAt(0).toUpperCase() + selectedDifficulty.slice(1);
+    updateQuizTitle();
+    timeLeft = initialTimePerQuestion;
     loadQuestion();
     startTimer();
     setupPowerUps();
     updateScoreDisplay();
 };
 
-// update the score display
-function updateScoreDisplay() {
-    document.getElementById("current-score").textContent = userScore;
-    document.getElementById("question-number").textContent = questionIndex + 1;
-    document.getElementById("total-questions").textContent = quizQuestions.length;
+// Load questions for the selected quiz from the question pools
+function loadQuestionsForSelectedQuiz() {
+    // Get the questions for the selected quiz or default to quiz1 if not found
+    quizQuestions = allQuizQuestions[selectedQuiz] || allQuizQuestions.quiz1;
+    // Reset to first question and clear score
+    questionIndex = 0;
+    userScore = 0;
 }
 
-// load question content
+// Update the quiz title displayed at the top of the page
+function updateQuizTitle() {
+    const quizTitles = {
+        quiz1: "Cricket Quiz",
+        quiz2: "Space Exploration Quiz",
+        quiz3: "History Quiz",
+        quiz4: "General Knowledge Quiz",
+        quiz5: "Programming Quiz"
+    };
+    document.querySelector("header h1").textContent = quizTitles[selectedQuiz] || "Quiz";
+}
+
+// Load question content into the appropriate template
 function loadQuestion() {
-    // reset timer for new question
     resetTimer();
 
-    // update question text
+    // Update the question text
     const questionText = document.querySelector(".question-text");
     questionText.textContent = quizQuestions[questionIndex].question;
 
-    // for multiple choice questions
-    if (quizQuestions[questionIndex].type === "multiple-choice") {
-        // show multiple choice template, hide others
-        document.querySelector(".multiple-choice").style.display = "block";
-        document.querySelector(".true-false").style.display = "none";
-        document.querySelector(".select-all").style.display = "none";
+    // Always show multiple-choice template (could be expanded to handle other question types)
+    document.querySelector(".multiple-choice").style.display = "block";
 
-        // update options
-        const options = quizQuestions[questionIndex].options;
-        const optionLabels = document.querySelectorAll(".multiple-choice .option-label");
+    // Update the answer options
+    const options = quizQuestions[questionIndex].options;
+    const optionLabels = document.querySelectorAll(".multiple-choice .option-label");
 
-        for (let i = 0; i < optionLabels.length; i++) {
-            optionLabels[i].textContent = options[i];
-
-            // reset any previously selected options
-            const input = document.querySelector(`#option${i+1}`);
-            if (input) {
-                input.checked = false;
-            }
-
-            // reset any styling from 50/50
-            const optionDiv = optionLabels[i].closest('.option');
-            optionDiv.style.opacity = "1";
-            optionDiv.style.pointerEvents = "auto";
+    // Update each option with the correct text and reset its state
+    for (let i = 0; i < optionLabels.length; i++) {
+        optionLabels[i].textContent = options[i];
+        const input = document.querySelector(`#option${i + 1}`);
+        if (input) {
+            input.checked = false; // Uncheck any previous selections
         }
+        // Reset option visibility (might have been affected by 50/50 power-up)
+        const optionDiv = optionLabels[i].closest('.option');
+        optionDiv.style.opacity = "1";
+        optionDiv.style.pointerEvents = "auto";
     }
 
-    // reset user answer
+    // Reset user answer for new question
     userAnswer = "";
-
-    // reset power-ups availability for new question if needed
+    // Refresh power-ups display to show which ones are still available
     resetPowerUpsDisplay();
-
-    // update score display
+    // Update score and question counter
     updateScoreDisplay();
 }
 
-// timer functions
-function startTimer() {
-    timeLeft = 30; // reset to default time
-    updateTimerDisplay();
+// TIMER FUNCTIONS - Implemented by Lewis
 
+// Start the countdown timer for the current question
+function startTimer() {
+    timeLeft = initialTimePerQuestion;
+    updateTimerDisplay();
+    // Clear any existing timer
     clearInterval(timerInterval);
+    // Start a new timer that decrements every second
     timerInterval = setInterval(function() {
         timeLeft--;
         updateTimerDisplay();
-
-        // handle time running out
+        // When time runs out, handle as if timer expired
         if (timeLeft <= 0) {
             clearInterval(timerInterval);
             handleTimeOut();
@@ -156,19 +120,23 @@ function startTimer() {
     }, 1000);
 }
 
+// Update the visual timer display with current time and color coding
 function updateTimerDisplay() {
-    // update timer text
+    // Update the numeric display
     document.querySelector(".timer-text").textContent = timeLeft;
-
-    // update timer fill visualization (represents time remaining)
-    const percentageLeft = (timeLeft / 30) * 100;
+    // Calculate and update the fill level of the timer
+    const percentageLeft = (timeLeft / initialTimePerQuestion) * 100;
     document.querySelector(".timer-fill").style.height = `${percentageLeft}%`;
 
-    // change color based on time remaining
-    if (timeLeft <= 5) {
+    // Define thresholds for color changes
+    const lowTimeThreshold = initialTimePerQuestion * 0.2;  // 20% of time left (red)
+    const mediumTimeThreshold = initialTimePerQuestion * 0.4;  // 40% of time left (orange)
+
+    // Change colors based on time remaining
+    if (timeLeft <= lowTimeThreshold) {
         document.querySelector(".timer").style.borderColor = "#ff4d4d";
         document.querySelector(".timer-fill").style.backgroundColor = "#ff4d4d";
-    } else if (timeLeft <= 10) {
+    } else if (timeLeft <= mediumTimeThreshold) {
         document.querySelector(".timer").style.borderColor = "#ffa64d";
         document.querySelector(".timer-fill").style.backgroundColor = "#ffa64d";
     } else {
@@ -177,235 +145,255 @@ function updateTimerDisplay() {
     }
 }
 
+// Reset and restart the timer (used when loading a new question)
 function resetTimer() {
     clearInterval(timerInterval);
     startTimer();
 }
 
+// Handle case when the timer reaches zero
 function handleTimeOut() {
-    // time ran out - auto move to next question
+    // Check if any answer was selected before time ran out
     checkAnswer(userAnswer);
+    // Move to the next question
     moveToNextQuestion();
 }
 
-// process user's answer
-function processAnswer() {
-  const selectedOption = document.querySelector('.multiple-choice input:checked');
-  const feedback = document.getElementById("feedback");
-
-  if (selectedOption) {
-    userAnswer = selectedOption.nextElementSibling.textContent;
-
-    if (userAnswer === quizQuestions[questionIndex].correct) {
-      userScore += 1;
-      feedback.textContent = "Correct!";
-      feedback.style.color = "green";
-    } else {
-      feedback.textContent = `Wrong! The correct answer was "${quizQuestions[questionIndex].correct}".`;
-      feedback.style.color = "red";
-    }
-
-    setTimeout(() => {
-      feedback.textContent = "";
-      moveToNextQuestion();
-    }, 1500); // show the user the correct answer for 1.5 seconds 
-  } else {
-    alert("Please select an answer first!");
-  }
+// Update the score and question counter display
+function updateScoreDisplay() {
+    document.getElementById("current-score").textContent = userScore;
+    document.getElementById("question-number").textContent = questionIndex + 1;
+    document.getElementById("total-questions").textContent = quizQuestions.length;
 }
 
-// check if answer is correct
+// Process the user's answer when submitted
+function processAnswer() {
+    const selectedOption = document.querySelector('.multiple-choice input:checked');
+    const feedback = document.getElementById("feedback");
+
+    if (selectedOption) {
+        // Get the text of the selected option
+        userAnswer = selectedOption.nextElementSibling.textContent;
+
+        // Check if answer is correct and update score/feedback
+        if (userAnswer === quizQuestions[questionIndex].correct) {
+            userScore += 1;
+            feedback.textContent = "Correct!";
+            feedback.style.color = "green";
+        } else {
+            feedback.textContent = `Wrong! The correct answer was "${quizQuestions[questionIndex].correct}".`;
+            feedback.style.color = "red";
+        }
+
+        // Wait 1.5 seconds to show feedback before moving to next question
+        setTimeout(() => {
+            feedback.textContent = "";
+            moveToNextQuestion();
+        }, 1500);
+    } else {
+        // Alert if no answer was selected
+        alert("Please select an answer first!");
+    }
+}
+
+// Check if provided answer matches the correct answer
 function checkAnswer(userAnswer) {
     if (userAnswer === quizQuestions[questionIndex].correct) {
         userScore += 1;
     }
 }
 
-// move to next question or end quiz
+// Move to the next question or end the quiz if all questions are answered
 function moveToNextQuestion() {
     if (questionIndex < quizQuestions.length - 1) {
+        // Move to next question
         questionIndex++;
         loadQuestion();
     } else {
-        // end of quiz
+        // End quiz if all questions are answered
         endQuiz();
     }
 }
 
+// End the quiz and save scores
 function endQuiz() {
-  clearInterval(timerInterval); // stop timer
-  const total = quizQuestions.length;
+    // Stop the timer
+    clearInterval(timerInterval);
+    const total = quizQuestions.length;
 
-  const quizTitle = document.querySelector("header h1").textContent.trim().replace(/\s+/g, "_").toLowerCase();
+    // Format quiz title for use in localStorage keys (replace spaces with underscores)
+    const quizTitle = document.querySelector("header h1").textContent.trim().replace(/\s+/g, "_").toLowerCase();
 
-  localStorage.setItem(`${quizTitle}_last`, userScore);
-  const previousBest = localStorage.getItem(`${quizTitle}_best`) || 0;
-  if (userScore > previousBest) {
-    localStorage.setItem(`${quizTitle}_best`, userScore);
-  }
+    // Save most recent score
+    localStorage.setItem(`${quizTitle}_last`, userScore);
+    // Update personal best if current score is higher
+    const previousBest = localStorage.getItem(`${quizTitle}_best`) || 0;
+    if (userScore > previousBest) {
+        localStorage.setItem(`${quizTitle}_best`, userScore);
+    }
 
-  window.location.href = `result.html?score=${userScore}&total=${total}`;
+    // Redirect to results page with score and total in URL parameters
+    window.location.href = `result.html?score=${userScore}&total=${total}`;
 }
 
-
-
-// save score to local storage
+// Save detailed score data (top scores, history)
 function saveScore() {
+    // Get existing scores or initialize empty object
     const quizScores = JSON.parse(localStorage.getItem("quizScores")) || {};
-
-    // use the quiz title as the key
     const quizTitle = document.querySelector("header h1").textContent;
     quizScores[quizTitle] = quizScores[quizTitle] || [];
 
-    // add new score
+    // Add current score with timestamp
     quizScores[quizTitle].push({
         score: userScore,
         date: new Date().toISOString()
     });
 
-    // sort by score (highest first)
+    // Sort scores from highest to lowest
     quizScores[quizTitle].sort((a, b) => b.score - a.score);
 
-    // keep only top 5 scores
+    // Keep only the top 5 scores
     if (quizScores[quizTitle].length > 5) {
         quizScores[quizTitle] = quizScores[quizTitle].slice(0, 5);
     }
 
-    // save back to local storage
+    // Save updated scores back to localStorage
     localStorage.setItem("quizScores", JSON.stringify(quizScores));
 }
 
-// restart the quiz
+// Restart the quiz (reset all state)
 function restartQuiz() {
+    // Reset question index and score
     questionIndex = 0;
     userScore = 0;
     userAnswer = "";
 
-    // reset power-ups
+    // Reset power-ups
     powerUpsUsed = {
         fiftyFifty: false,
         skip: false,
         extraTime: false
     };
 
-    // remove results div
+    // Remove results display and show quiz UI
     document.querySelector(".results").remove();
-
-    // show quiz elements again
     document.querySelector(".question-container").style.display = "block";
     document.querySelector(".controls").style.display = "block";
     document.querySelector(".power-up-panel").style.display = "flex";
     document.querySelector(".timer-container").style.display = "block";
 
-    // load first question
+    // Load first question
     loadQuestion();
 }
 
-// =========== power-up system ===========
+// POWER-UPS SETUP - Implemented by Alan
 
-// setup power-up buttons
+// setup the power-up buttons with event listeners and modal interactions
+// - alan
 function setupPowerUps() {
-    // 50/50 power-up
+    // setup event listener for the 50/50 power-up button
     document.getElementById("fifty-fifty").querySelector("button").addEventListener("click", function() {
         if (!powerUpsUsed.fiftyFifty) {
             showPowerUpConfirmation("fifty-fifty", "50/50", use5050PowerUp);
         }
     });
 
-    // skip question power-up
+    // setup event listener for the skip question power-up button
     document.getElementById("skip").querySelector("button").addEventListener("click", function() {
         if (!powerUpsUsed.skip) {
             showPowerUpConfirmation("skip", "Skip Question", useSkipPowerUp);
         }
     });
 
-    // extra time power-up
+    // setup event listener for the extra time power-up button
     document.getElementById("extra-time").querySelector("button").addEventListener("click", function() {
         if (!powerUpsUsed.extraTime) {
             showPowerUpConfirmation("extra-time", "Extra Time", useExtraTimePowerUp);
         }
     });
 
-    // close modal buttons
+    // setup modal cancel button
     document.querySelector(".cancel-btn").addEventListener("click", hidePowerUpConfirmation);
 
-    // submit answer button
+    // setup submit answer button
     document.querySelector(".submit-btn").addEventListener("click", processAnswer);
 }
 
-// show power-up confirmation modal
+// show the confirmation modal when a power-up is clicked
+// the modal asks the user to confirm before using a power-up
+// - alan
 function showPowerUpConfirmation(powerUpId, powerUpName, confirmCallback) {
     const modal = document.getElementById("power-up-modal");
     document.getElementById("power-up-name").textContent = powerUpName;
 
-    // set confirm button action
+    // set the confirm button to execute the appropriate power-up function
     document.querySelector(".confirm-btn").onclick = function() {
         confirmCallback();
         hidePowerUpConfirmation();
     };
 
-    // show modal
+    // display the modal
     modal.style.display = "flex";
 }
 
-// hide power-up confirmation modal
+// hide the power-up confirmation modal
+// - alan
 function hidePowerUpConfirmation() {
     document.getElementById("power-up-modal").style.display = "none";
 }
 
-// reset power-ups display
+// update the display of power-up buttons to show which ones have been used
+// - alan
 function resetPowerUpsDisplay() {
-    // update power-up buttons based on usage
     Object.keys(powerUpsUsed).forEach(powerUp => {
         const button = document.getElementById(convertToDashCase(powerUp));
-
         if (powerUpsUsed[powerUp]) {
-            // mark as used (disabled)
             button.classList.add("power-up-disabled");
             button.querySelector("button").disabled = true;
         }
     });
 }
 
-// helper function to convert camelCase to dash-case
+// convert camelCase to dash-case for DOM element IDs
+// e.g., fiftyFifty becomes fifty-fifty
+// - alan
 function convertToDashCase(str) {
     return str.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
 }
 
-// 50/50 power-up implementation
+// 50/50 POWER-UP IMPLEMENTATION
+// removes two incorrect options, leaving the correct answer and one wrong answer
+// - alan
 function use5050PowerUp() {
+    // mark the power-up as used so it can't be used again in this quiz
     powerUpsUsed.fiftyFifty = true;
 
-    // disable the 50/50 button
+    // update button appearance to show it's been used
     const button = document.getElementById("fifty-fifty");
     button.classList.add("power-up-disabled");
     button.querySelector("button").disabled = true;
 
-    // get correct answer
+    // get the correct answer and all option elements
     const correctAnswer = quizQuestions[questionIndex].correct;
-
-    // get all options
     const options = document.querySelectorAll(".multiple-choice .option");
     const optionLabels = document.querySelectorAll(".multiple-choice .option-label");
 
-    // find incorrect options
+    // collect all incorrect options
     const incorrectOptions = [];
-
     for (let i = 0; i < optionLabels.length; i++) {
         if (optionLabels[i].textContent !== correctAnswer) {
             incorrectOptions.push(options[i]);
         }
     }
 
-    // randomly select two incorrect options to hide
+    // shuffle the incorrect options and select two to hide
     shuffleArray(incorrectOptions);
     const optionsToHide = incorrectOptions.slice(0, 2);
 
-    // hide selected incorrect options
+    // hide the selected incorrect options
     optionsToHide.forEach(option => {
         option.style.opacity = "0.3";
         option.style.pointerEvents = "none";
-        // also uncheck if it was checked
         const input = option.querySelector("input");
         if (input) {
             input.checked = false;
@@ -413,39 +401,46 @@ function use5050PowerUp() {
     });
 }
 
-// skip question power-up implementation
+// SKIP QUESTION POWER-UP IMPLEMENTATION
+// allows user to skip the current question without gaining or losing points
+// - alan
 function useSkipPowerUp() {
+    // mark the power-up as used
     powerUpsUsed.skip = true;
 
-    // disable the skip button
+    // update button appearance
     const button = document.getElementById("skip");
     button.classList.add("power-up-disabled");
     button.querySelector("button").disabled = true;
 
-    // move to next question without checking answer or penalizing score
+    // move to the next question
     moveToNextQuestion();
 }
 
-// extra time power-up implementation
+// EXTRA TIME POWER-UP IMPLEMENTATION
+// adds 15 seconds to the current question's timer
+// - alan
 function useExtraTimePowerUp() {
+    // mark the power-up as used
     powerUpsUsed.extraTime = true;
 
-    // disable the extra time button
+    // update button appearance
     const button = document.getElementById("extra-time");
     button.classList.add("power-up-disabled");
     button.querySelector("button").disabled = true;
 
-    // add extra time (15 seconds)
+    // add 15 seconds to the timer
     timeLeft += 15;
     updateTimerDisplay();
 }
 
-// fisher-yates shuffle algorithm for arrays (shuffling for 50/50)
+// Utility function to shuffle an array using Fisher-Yates algorithm
+// used for randomizing which incorrect answers to hide in 50/50 power-up
+// - alan
 function shuffleArray(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
 }
-
