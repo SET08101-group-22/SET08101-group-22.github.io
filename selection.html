@@ -1,0 +1,159 @@
+<!DOCTYPE html> 
+<html> 
+<head> 
+	<title>Quiz Game with Score</title> 
+</head> 
+<body> 
+<h1>QUIZ GAME</h1> 
+
+<label for="difficulty">Select Difficulty: </label> 
+<select id="difficulty"> 
+	<option value="easy">Easy</option>
+	<option value="medium">Medium</option>
+	<option value="hard">Hard</option> 
+</select> 
+
+<label for="questionType">Select Question Type:</label>
+<select id="questionType">
+	<option value="single">Single Choice</option>
+	<option value="multiple">Multiple Choice</option>
+	<option value="truefalse">True/False</option>
+	<option value="input">Text Input</option>
+</select>
+
+<button onclick="loadQuestion()">Get Question</button>
+
+<div id="scoreBoard">Score: 0</div> 
+
+<div class="question-container" id="quizArea"></div>
+<div id="result"></div>
+
+<script>
+let score = 0;
+
+const questions = {
+    easy: {
+        single: [
+            { question: "What is 5 + 2?", options: ["3", "7", "10", "8"], correct: "7" }
+        ],
+        multiple: [
+            { question: "Select the Marvel superheroes", options: ["Superman", "Iron Man", "Thing", "Wonder Woman"], correct: ["Iron Man", "Thing"] }
+        ],
+        truefalse: [
+            { question: "The sky is pink.", correct: false }
+        ],
+        input: [
+            { question: "Type the country that the pyramids and the river Nile are in", correct: "Egypt" }
+        ]
+    },
+    medium: {
+        single: [
+            { question: "What musical has the characters Glinda and Elphaba?", options: ["Hairspray", "Mean Girls", "Wicked", "Hamilton"], correct: "Wicked" }
+        ],
+        multiple: [
+            { question: "Select all the Capitals of the world?", options: ["Glasgow", "Ottawa", "Islamabad", "Rio de Janeiro"], correct: ["Ottawa", "Islamabad"] }
+        ],
+        truefalse: [
+            { question: "Ariana Grande has an album called 7 rings.", correct: false }
+        ],
+        input: [
+            { question: "What is 5 x 6?", correct: "30" }
+        ]
+    },
+    hard: {
+        single: [
+            { question: "What is the most common allergy in the world?", options: ["Nuts", "Hayfever", "Lactose", "Wheat"], correct: "Hayfever" }
+        ],
+        multiple: [
+            { question: "Select all the blood type options:", options: ["AB", "BB", "O", "C"], correct: ["AB", "O"] }
+        ],
+        truefalse: [
+            { question: "Rihanna's real name is Robyn.", correct: true }
+        ],
+        input: [
+            { question: "What modern day item made it into the final season of Game of Thrones?", correct: "Starbucks cup" }
+        ]
+    }
+};
+
+function loadQuestion() {
+    const difficulty = document.getElementById("difficulty").value;
+    const type = document.getElementById("questionType").value;
+    const questionPool = questions[difficulty][type];
+    const randomQuestion = questionPool[Math.floor(Math.random() * questionPool.length)];
+    displayQuestion(randomQuestion, type);
+}
+
+function displayQuestion(questionObj, type) {
+    const quizArea = document.getElementById("quizArea");
+    quizArea.innerHTML = `<p class="question">${questionObj.question}</p>`;
+    const resultDiv = document.getElementById("result");
+    resultDiv.textContent = ""; 
+
+    if (type === "single") {
+        questionObj.options.forEach(option => {
+            quizArea.innerHTML += `<button class="answer-btn" onclick="checkAnswer('${option}', '${questionObj.correct}')">${option}</button>`;
+        });
+    }
+    else if (type === "multiple") {
+        questionObj.options.forEach(option => {
+            quizArea.innerHTML += `<input type="checkbox" value="${option}" name="multi"> ${option} <br>`;
+        });
+        quizArea.innerHTML += `<button class="submit-btn" onclick='checkMultipleAnswer(${JSON.stringify(questionObj.correct)})'>Submit</button>`;
+    }
+    else if (type === "truefalse") {
+        ["True", "False"].forEach(value => {
+            quizArea.innerHTML += `<button class="answer-btn" onclick="checkAnswer('${value.toLowerCase()}', '${questionObj.correct}')">${value}</button>`;
+        });
+    }
+    else if (type === "input") {
+        quizArea.innerHTML += `<input type="text" id="textAnswer"> <button class="submit-btn" onclick="checkTextAnswer('${questionObj.correct}')">Submit</button>`;
+    }
+}
+
+function checkAnswer(selected, correct) {
+    const resultDiv = document.getElementById("result");
+    if (selected === correct.toString()) {
+        resultDiv.textContent = "Correct!";
+        score++;
+    } else {
+        resultDiv.textContent = `Wrong! The correct answer is: ${correct}`;
+    }
+    updateScore();
+}
+
+function checkMultipleAnswer(correct) {
+    const selectedOptions = [...document.querySelectorAll('input[name="multi"]:checked')].map(input => input.value);
+    const correctAnswers = correct;
+
+    const selectedSorted = selectedOptions.sort().toString();
+    const correctSorted = correctAnswers.sort().toString();
+
+    const resultDiv = document.getElementById("result");
+
+    if (selectedSorted === correctSorted) {
+        resultDiv.textContent = "Correct!";
+        score++;
+    } else {
+        resultDiv.textContent = `Wrong! Correct answers are: ${correctAnswers.join(", ")}`;
+    }
+    updateScore();
+}
+
+function checkTextAnswer(correct) {
+    const userInput = document.getElementById("textAnswer"); 
+    const resultDiv = document.getElementById("result")
+        score++;
+    } else {
+        resultDiv.textContent = `Wrong! The correct answer is: ${correct}`;
+    }
+    updateScore();
+}
+
+function updateScore() {
+    document.getElementById("scoreBoard").textContent = `Score: ${score}`;
+}
+</script>
+
+</body>
+</html>
