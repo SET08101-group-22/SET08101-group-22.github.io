@@ -33,6 +33,36 @@ main {
     position: relative;
 }
 
+/* index page stuff */
+
+.index-option {
+    margin-bottom: 30px;
+    padding: 20px;
+    border-radius: 8px;
+    position: relative;
+    height: 60px;
+}
+.index-options-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 35px;
+    width: 100%;
+}
+
+.index_main_btn {
+    padding: 10px;
+    font-size: 18px;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.index_select_btn {
+    padding: 2px;
+    font-size: 18px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
 /* timer */
 .timer-container {
     text-align: center;
