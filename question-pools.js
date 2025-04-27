@@ -195,7 +195,7 @@ const historyQuestions = [
     }
 ];
 
-// Geography Quiz (Example for Quiz 4) ZAINAB
+// General Knowledge quiz (Example for Quiz 4) ZAINAB
 const generalKnowledgeQuestions = [
     {
         question: "What is 5 + 2?",
